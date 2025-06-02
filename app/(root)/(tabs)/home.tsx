@@ -443,22 +443,33 @@ export default function HomeScreen() {
       console.log('Fetching available riders...');
       setIsLoadingRiders(true);
       const token = await getSession('accessToken');
-      const res = await axios.get(
-        `http://${IP_Address}:8002/rides/available-riders?rideId=${rideId}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      console.log('fetchAvailableRiders Ride ID:', rideId);
+      console.log('rideId:', rideId, 'type:', typeof rideId);
 
-      const data = await res.data;
+      const res = await axios.get(`http://${IP_Address}:8002/rides/available-riders/${rideId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+  
+      const data = res.data;
       console.log('Available riders:', data.data);
-      setAvailableRiders(data.data || []);
+      setAvailableRiders(data.data);
     } catch (error) {
-      console.error('Error fetching available riders:', error);
+      if (axios.isAxiosError(error)) {
+        // Axios error: you can access error.response here
+        console.error('Error fetching available riders:', error.response?.data || error.message);
+      } else if (error instanceof Error) {
+        // Other JS errors
+        console.error('Error fetching available riders:', error.message);
+      } else {
+        // Unknown error type
+        console.error('Error fetching available riders:', error);
+      }
     } finally {
       setIsLoadingRiders(false);
     }
   };
+  
 
   // Error handler utility
   const handleError = (error: any) => {
@@ -543,14 +554,29 @@ export default function HomeScreen() {
       if (event.rideId === rideId && event.riderId) {
         console.log('Ride accepted:', event);
         Alert.alert('Ride Accepted', 'A rider has accepted your ride request!');
-        router.push({
-          pathname: '/(root)/(rides)/ChatScreen',
-          params: {
-            rideId: event.rideId,
-            riderId: event.riderId,
-            isRider: 'false'
-          },
-        });
+        
+        // Check if current user is rider or passenger
+        if (role === 'rider' && userId === event.riderId) {
+          // Redirect rider to chat screen
+          router.push({
+            pathname: '/(root)/(rides)/ChatScreen',
+            params: {
+              rideId: event.rideId,
+              riderId: event.riderId,
+              isRider: 'true'
+            },
+          });
+        } else {
+          // Redirect passenger to chat screen
+          router.push({
+            pathname: '/(root)/(rides)/ChatScreen',
+            params: {
+              rideId: event.rideId,
+              riderId: event.riderId,
+              isRider: 'false'
+            },
+          });
+        }
       }
     };
 

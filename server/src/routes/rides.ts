@@ -48,6 +48,8 @@ rideRouter.post(
  */
 rideRouter.get('/available-riders', rideController.getAvailableRiders);
 
+rideRouter.get('/available-riders/:rideId', rideController.getAvailableRidersByRideId);
+
 /**
  * Customer accepts a specific rider and sends OTP.
  */
@@ -82,6 +84,7 @@ rideRouter.post('/complete-ride', rideController.completedRide);
  * Customer submits a ride review.
  */
 rideRouter.post('/submit-ride-review', rideController.submitRideReview);
+
 
 /**
  * Rider confirms payment receipt.
